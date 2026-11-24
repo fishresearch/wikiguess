@@ -39,8 +39,32 @@
   .seg{display:flex;border:1px solid var(--rule);border-radius:999px;padding:2px;font-size:13px}
   .seg button{background:none;border:0;color:var(--muted);padding:5px 12px;border-radius:999px;cursor:pointer;font:inherit}
   .seg button.on{background:var(--ink);color:var(--bg)}
-  .cats{display:flex;gap:6px;overflow-x:auto;padding:2px 0 12px;margin-bottom:6px;border-bottom:1px solid var(--rule);scrollbar-width:none}
-  .cats::-webkit-scrollbar{display:none}
+  .catwrap{position:relative;border-bottom:1px solid var(--rule);margin-bottom:6px}
+  .cats{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--muted) transparent}
+  .cats::-webkit-scrollbar{height:6px}
+  .cats::-webkit-scrollbar-track{background:var(--rule);border-radius:3px}
+  .cats::-webkit-scrollbar-thumb{background:var(--muted);border-radius:3px}
+  .cats::after{content:"";flex:0 0 28px}
+  .fade{position:absolute;top:0;bottom:12px;width:36px;pointer-events:none;transition:opacity .2s}
+  .fade.r{right:0;background:linear-gradient(to right,transparent,var(--bg))}
+  .fade.l{left:0;background:linear-gradient(to left,transparent,var(--bg));opacity:0}
+  .arrow{position:absolute;top:3px;width:30px;height:30px;border-radius:50%;border:1px solid var(--rule);background:var(--paper);color:var(--ink);font-size:16px;line-height:1;cursor:pointer;display:none;z-index:2}
+  .arrow.l{left:-6px}.arrow.r{right:-6px}
+  @media (hover:hover) and (pointer:fine){ .arrow{display:block} }
+  .hdr-right{display:flex;align-items:center;gap:8px}
+  .qbtn{width:30px;height:30px;border-radius:50%;border:1px solid var(--rule);background:none;color:var(--ink);font:600 15px "Source Serif 4",serif;cursor:pointer}
+  /* How-to-play popup */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+  .modal.show{display:flex;animation:fade .25s ease}
+  .sheet{background:var(--paper);color:var(--ink);border-radius:12px;max-width:440px;width:100%;max-height:90vh;overflow:auto;padding:22px 22px 18px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+  .sheet h2{font-family:"Source Serif 4",serif;font-weight:600;font-size:24px;margin:0 0 4px}
+  .sheet .sub{color:var(--muted);font-size:14px;margin:0 0 16px}
+  .step{display:flex;gap:12px;margin-bottom:14px;font-size:14.5px;line-height:1.5}
+  .step .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .demo{margin-top:6px;padding:8px 10px;border:1px solid var(--rule);border-radius:6px;font-family:"Source Serif 4",serif;font-size:14.5px;background:var(--bg)}
+  .demo .bar{height:5px;border-radius:3px;background:var(--rule);margin:5px 0 3px;overflow:hidden}
+  .demo .bar i{display:block;height:100%;width:72%;background:var(--hot)}
+  .sheet .btn{width:100%;margin-top:6px}
   .cats button{flex:none;font:inherit;font-size:13.5px;padding:6px 12px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);cursor:pointer;white-space:nowrap}
   .cats button.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);font-weight:600}
   .meta{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin:10px 0}
@@ -95,9 +119,31 @@
 <div class="wrap">
   <header>
     <h1>Wiki<b>guess</b></h1>
-    <div class="seg"><button id="mDaily" class="on">Daily</button><button id="mEndless">Endless</button></div>
+    <div class="hdr-right">
+      <div class="seg"><button id="mDaily" class="on">Daily</button><button id="mEndless">Endless</button></div>
+      <button class="qbtn" id="helpBtn" aria-label="How to play">?</button>
+    </div>
   </header>
-  <div class="cats" id="cats"></div>
+  <div class="catwrap">
+    <button class="arrow l" id="catL" aria-label="Scroll categories left">‹</button>
+    <div class="cats" id="cats"></div>
+    <div class="fade l" id="fadeL"></div><div class="fade r" id="fadeR"></div>
+    <button class="arrow r" id="catR" aria-label="Scroll categories right">›</button>
+  </div>
+
+  <div class="modal" id="howto" role="dialog" aria-modal="true" aria-labelledby="howtoTitle">
+    <div class="sheet">
+      <h2 id="howtoTitle">How to play</h2>
+      <p class="sub">Name the Wikipedia article in as few clues as you can.</p>
+      <div class="step"><span class="n">1</span><div>Each clue is a real section of the article, with its name blacked out. Clues start obscure and get easier.
+        <div class="demo">Its blood is blue because of the protein hemocyanin, and a <span class="rd">███████</span> has three hearts.</div></div></div>
+      <div class="step"><span class="n">2</span><div>Type your guess. Any Wikipedia article counts, and typos are OK. A wrong guess or a skip reveals the next clue. You get 6 clues.</div></div>
+      <div class="step"><span class="n">3</span><div><b>Link Radar:</b> wrong guesses show how close you are, plus pages your guess and the answer both link to.
+        <div class="demo"><div style="display:flex;justify-content:space-between;font-family:Inter,sans-serif;font-size:13px"><b>Squid</b><span style="color:var(--hot);font-weight:600">Hot</span></div><div class="bar"><i></i></div><span style="font-family:Inter,sans-serif;font-size:12px;color:var(--muted)">Both link to: Cephalopod, Ink</span></div></div></div>
+      <div class="step"><span class="n">4</span><div>New daily puzzles in every category, or play Endless. Share your result grid: <span style="white-space:nowrap">🟦🟨🟧🟩</span></div></div>
+      <button class="btn" id="howtoClose">Play</button>
+    </div>
+  </div>
 
   <div class="meta"><span id="label"></span><div class="pips" id="pips"></div></div>
 
@@ -147,13 +193,14 @@ const CATEGORIES = {
   linguistics: {name:"Linguistics", emoji:"🗣️", pool:["Linguistic relativity","Noam Chomsky","Universal grammar","Phoneme","Morpheme","International Phonetic Alphabet","Great Vowel Shift","Proto-Indo-European language","Pidgin","Creole language","Esperanto","Rosetta Stone","Cuneiform","Linear B","Code-switching","Dialect","Grimm's law","Ferdinand de Saussure","Pragmatics","Semantics","Syntax","Sign language","American Sign Language","Basque language","Klingon language","Pirahã language","Click consonant","Ergative–absolutive alignment","Grammatical gender","Loanword","Hangul","Chinese characters","Latin","Sanskrit","Vowel harmony","Onomatopoeia","Eggcorn","Garden-path sentence","Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo","Colorless green ideas sleep furiously","Critical period hypothesis","Voynich manuscript","Endangered language","Glottal stop","Schwa","Tone (linguistics)","Language isolate","Mondegreen"]},
   history: {name:"History", emoji:"📜", pool:["Fall of the Western Roman Empire","Black Death","French Revolution","Ming dynasty","Cold War","Silk Road","Industrial Revolution","Magna Carta","Byzantine Empire","Ottoman Empire","Aztec Empire","Inca Empire","Mongol Empire","Printing press","Renaissance","Reformation","Apollo 11","Berlin Wall","Titanic","Pompeii","Cleopatra","Genghis Khan","Joan of Arc","Napoleon","Battle of Hastings","Hundred Years' War","Meiji Restoration","Haitian Revolution","Library of Alexandria","Terracotta Army","Stonehenge","Columbian exchange","Spanish flu","Dust Bowl","Partition of India","Viking Age","Hanseatic League","Great Fire of London","Code of Hammurabi","Mansa Musa","Boston Tea Party","Tulip mania"]},
   geography: {name:"Geography", emoji:"🌍", pool:["Mount Everest","Amazon rainforest","Sahara","Great Barrier Reef","Mariana Trench","Dead Sea","Iceland","Madagascar","Venice","Istanbul","Kyoto","Antarctica","Nile","Mississippi River","Grand Canyon","Galápagos Islands","Lake Baikal","Atacama Desert","Himalayas","Andes","Greenland","Svalbard","Bhutan","Singapore","Petra","Machu Picchu","Angkor Wat","Panama Canal","Strait of Gibraltar","Ring of Fire","Victoria Falls","Yellowstone National Park","Boston","Tokyo","Vatican City","Easter Island","Okavango Delta","Dolomites","Patagonia","Faroe Islands","Bay of Fundy","Uluru"]},
+  music: {name:"Music", emoji:"🎵", pool:["Johann Sebastian Bach","Wolfgang Amadeus Mozart","Pyotr Ilyich Tchaikovsky","Frédéric Chopin","Igor Stravinsky","The Rite of Spring","The Four Seasons (Vivaldi)","Elvis Presley","Michael Jackson","Bob Dylan","Aretha Franklin","Miles Davis","Kind of Blue","Louis Armstrong","Nina Simone","Johnny Cash","Fela Kuti","Ravi Shankar","Björk","Kraftwerk","Bob Marley","Reggae","Punk rock","Heavy metal music","Rock and roll","Gospel music","Bossa nova","K-pop","Gamelan","Sitar","Theremin","Piano","Violin","Stradivarius","Electric guitar","Synthesizer","Auto-Tune","Woodstock","Symphony","Fugue","Twelve-tone technique","Equal temperament","Musical notation","Throat singing","Didgeridoo","Disco","Techno","Grunge","Motown","Carnegie Hall","Bohemian Rhapsody","Thriller (album)"]},
   arts: {name:"Arts & Architecture", emoji:"🎨", pool:["Mona Lisa","The Starry Night","Hamlet","Don Quixote","The Great Gatsby","Ludwig van Beethoven","Frida Kahlo","Jazz","Hip hop music","Opera","Ballet","Impressionism","Cubism","Baroque","Haiku","Sonnet","William Shakespeare","Jane Austen","The Beatles","Kabuki","Origami","Ukiyo-e","Bauhaus","Art Nouveau","Gothic architecture","Sistine Chapel ceiling","Odyssey","Epic of Gilgamesh","One Thousand and One Nights","Blues","Flamenco","Surrealism","Banksy","Charlie Chaplin","Citizen Kane","Toni Morrison","Gabriel García Márquez","Frank Lloyd Wright","Le Corbusier","Zaha Hadid","Brutalist architecture","Fallingwater","Sagrada Família","Flying buttress"]},
   technology: {name:"Technology", emoji:"⚙️", pool:["Raspberry Pi","Internet","Transistor","Steam engine","Bicycle","Lego","3D printing","Velcro","Global Positioning System","Lithium-ion battery","Microwave oven","Electrical telegraph","Morse code","Turing machine","ENIAC","Linux","World Wide Web","Bitcoin","Smartphone","Jet engine","Light-emitting diode","Laser","Refrigerator","Concrete","Arduino","Wi-Fi","QR code","Barcode","Hubble Space Telescope","International Space Station","Elevator","Golden Gate Bridge","Eiffel Tower","Nuclear reactor","Solar cell","Wind turbine","Typewriter","Phonograph","Compact disc","Antikythera mechanism"]},
   math: {name:"Mathematics", emoji:"➗", pool:["Fibonacci sequence","Pi","Golden ratio","Pythagorean theorem","Fermat's Last Theorem","Prime number","Möbius strip","Fractal","Mandelbrot set","Monty Hall problem","Infinity","Euler's identity","Game theory","Prisoner's dilemma","Riemann hypothesis","Gödel's incompleteness theorems","Topology","Klein bottle","Seven Bridges of Königsberg","Four color theorem","Imaginary unit","Calculus","Algorithm","Boolean algebra","Pascal's triangle","Sudoku","Rubik's Cube","Euclid","Ada Lovelace","Alan Turing","Srinivasa Ramanujan","Emmy Noether","Hilbert's paradox of the Grand Hotel","Birthday problem","Benford's law","Normal distribution","Tessellation","Platonic solid"]},
 };
 // General knowledge = every pool combined
 CATEGORIES.general = {name:"General", emoji:"✨", pool:[...new Set(Object.values(CATEGORIES).flatMap(c=>c.pool))]};
-const CAT_ORDER = ["general","science","philosophy","linguistics","history","geography","arts","technology","math"];
+const CAT_ORDER = ["general","science","philosophy","linguistics","history","geography","arts","music","technology","math"];
 
 const MAX_CLUES = 6;
 const API = "https://en.wikipedia.org/w/api.php";
@@ -328,6 +375,7 @@ const SOURCES = {
   linguistics: [["Society and social sciences", /language|linguist|writing/i], ["People", /linguist/i]],
   history:     [["History"], ["People", /leader|politic|military|explorer|ruler|monarch|activist|revolution/i]],
   geography:   [["Geography"]],
+  music:       [["Arts", /music/i, true], ["People", /music|composer|singer|songwriter/i]],   // true = no whole-page fallback
   arts:        [["Arts"], ["People", /artist|writer|author|poet|music|composer|architect|film|painter|sculpt/i]],
   technology:  [["Technology"], ["People", /inventor|engineer/i]],
   math:        [["Mathematics"], ["People", /mathematic/i]],
@@ -344,7 +392,7 @@ async function parseLinks(page, section){
 }
 // Whole-page links via the standard query API (same call Link Radar uses), with paging
 async function queryLinks(page){ return [...await fetchLinks(page, 6000)]; }
-async function sourceTitles(page, re){
+async function sourceTitles(page, re, strict){
   if (!re){
     try { const q = await queryLinks(page); if (q.length > 20) return q; throw new Error("query returned " + q.length); }
     catch(e){ POOL_ERRORS.push(page + " (query): " + e.message); return parseLinks(page); }
@@ -356,7 +404,7 @@ async function sourceTitles(page, re){
   } catch(e){
     POOL_ERRORS.push(page + " (sections): " + e.message);
     // Section filtering unavailable: whole-page fallback, except for lists far broader than the category
-    if (/People|Society/.test(page)) throw e;
+    if (strict || /People|Society/.test(page)) throw e;
     return queryLinks(page);
   }
   const strip = s => s.replace(/<[^>]+>/g,"");
@@ -377,14 +425,14 @@ async function loadPool(catId, store){
   const key = "wg-pool-v1-" + catId, cached = store && store.get(key, null);
   if (cached && Date.now() - cached.t < POOL_TTL && cached.titles.length) return cached.titles;
   // Try the current page name, then the alternate naming scheme, keeping whichever returns articles
-  const tryBoth = async (page, re) => {
+  const tryBoth = async (page, re, strict) => {
     for (const base of [VA, VA_ALT]){
-      try { const t = await sourceTitles(base + page, re); if (t.length > 20) return t; POOL_ERRORS.push(base + page + ": " + t.length + " links"); }
+      try { const t = await sourceTitles(base + page, re, strict); if (t.length > 20) return t; POOL_ERRORS.push(base + page + ": " + t.length + " links"); }
       catch(e){ POOL_ERRORS.push(base + page + ": " + e.message); }
     }
     throw new Error("no list found");
   };
-  const results = await Promise.allSettled(SOURCES[catId].map(([page, re]) => tryBoth(page, re)));
+  const results = await Promise.allSettled(SOURCES[catId].map(([page, re, strict]) => tryBoth(page, re, strict)));
   results.forEach((r,i) => { if (r.status === "rejected") POOL_ERRORS.push(SOURCES[catId][i][0] + ": " + (r.reason && r.reason.message)); });
   const fetched = results.filter(r => r.status === "fulfilled").flatMap(r => r.value);
   if (!fetched.length) POOL_ERRORS.push(catId + ": vital-article lists returned no articles");
@@ -433,7 +481,31 @@ let answer=null, clues=[], history=[], done=false, busy=false, loadToken=0, endl
 function renderCats(){
   $("cats").innerHTML = CAT_ORDER.map(id => `<button data-c="${id}" class="${id===cat?"on":""}">${CATEGORIES[id].emoji} ${CATEGORIES[id].name}</button>`).join("");
   $("cats").querySelectorAll("button").forEach(b => b.onclick = () => { cat=b.dataset.c; store.set("wg-cat",cat); renderCats(); start(); });
+  const on = $("cats").querySelector("button.on");
+  if (on) on.scrollIntoView({block:"nearest", inline:"center", behavior:"smooth"});
+  updateCatEdges();
 }
+// Category row: fades + arrows show when there's more to scroll; mouse wheel scrolls sideways
+function updateCatEdges(){
+  const c=$("cats"), max=c.scrollWidth-c.clientWidth;
+  const atL=c.scrollLeft<=2, atR=c.scrollLeft>=max-2;
+  $("fadeL").style.opacity = atL?0:1; $("fadeR").style.opacity = atR?0:1;
+  $("catL").style.visibility = atL?"hidden":""; $("catR").style.visibility = atR?"hidden":"";
+}
+$("cats").addEventListener("scroll", updateCatEdges, {passive:true});
+window.addEventListener("resize", updateCatEdges);
+$("catL").onclick = () => $("cats").scrollBy({left:-240});
+$("catR").onclick = () => $("cats").scrollBy({left:240});
+$("cats").addEventListener("wheel", e => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)){ $("cats").scrollLeft += e.deltaY; e.preventDefault(); } }, {passive:false});
+
+// How-to-play popup: shown on the first visit, reopened with the ? button
+function openHowto(){ $("howto").classList.add("show"); $("howtoClose").focus(); }
+function closeHowto(){ $("howto").classList.remove("show"); store.set("wg-seen-howto", true); }
+$("helpBtn").onclick = openHowto;
+$("howtoClose").onclick = closeHowto;
+$("howto").addEventListener("click", e => { if (e.target === $("howto")) closeHowto(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("howto").classList.contains("show")) closeHowto(); });
+if (!store.get("wg-seen-howto", false)) openHowto();
 function setMode(m){ mode=m; store.set("wg-mode",m); $("mDaily").classList.toggle("on",m==="daily"); $("mEndless").classList.toggle("on",m==="endless"); start(); }
 $("mDaily").onclick=()=>setMode("daily"); $("mEndless").onclick=()=>setMode("endless");
 
