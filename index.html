@@ -65,6 +65,17 @@
   .demo .bar{height:5px;border-radius:3px;background:var(--rule);margin:5px 0 3px;overflow:hidden}
   .demo .bar i{display:block;height:100%;width:72%;background:var(--hot)}
   .sheet .btn{width:100%;margin-top:6px}
+  /* Feedback bubble + form */
+  .fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;border:0;background:var(--ink);color:var(--bg);font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:10}
+  .fab:hover{transform:scale(1.05)}
+  .ftype{display:flex;gap:8px;margin-bottom:12px}
+  .ftype button{flex:1;font:inherit;font-size:14px;padding:9px;border-radius:8px;border:1px solid var(--rule);background:var(--bg);color:var(--ink);cursor:pointer}
+  .ftype button.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);font-weight:600}
+  .sheet textarea,.sheet input{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--rule);border-radius:8px;background:var(--bg);color:var(--ink);margin-bottom:10px}
+  .sheet textarea{min-height:110px;resize:vertical}
+  .sheet .note{font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.45}
+  form.sheet{display:block;margin-top:0}
+  .sheet .x{float:right;background:none;border:0;font-size:22px;color:var(--muted);cursor:pointer;line-height:1}
   .cats button{flex:none;font:inherit;font-size:13.5px;padding:6px 12px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);cursor:pointer;white-space:nowrap}
   .cats button.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);font-weight:600}
   .meta{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin:10px 0}
@@ -182,6 +193,23 @@
   </footer>
 </div>
 <div class="toast" id="toast"></div>
+
+<button class="fab" id="fbBtn" aria-label="Send feedback">💬</button>
+<div class="modal" id="fb" role="dialog" aria-modal="true" aria-labelledby="fbTitle">
+  <form class="sheet" id="fbForm">
+    <button type="button" class="x" id="fbX" aria-label="Close">×</button>
+    <h2 id="fbTitle">Tell me</h2>
+    <p class="sub">Bug, bad clue, idea: anything helps.</p>
+    <div class="ftype">
+      <button type="button" data-t="bug" class="on">🐞 Something's broken</button>
+      <button type="button" data-t="idea">💡 Idea / feedback</button>
+    </div>
+    <textarea id="fbMsg" placeholder="What happened? What did you expect?" required></textarea>
+    <input id="fbEmail" type="email" placeholder="Email (optional, for a reply)">
+    <p class="note">Sends your message plus the current category, mode and puzzle (including today's answer), and your browser type. Nothing else.</p>
+    <button class="btn" id="fbSend" type="submit">Send</button>
+  </form>
+</div>
 
 <script>
 // ============================ ENGINE START ============================
@@ -467,6 +495,9 @@ if (typeof module !== "undefined") module.exports = { CATEGORIES, SOURCES, parse
 
 <script>
 // ============================ UI ============================
+// ⬇︎ Paste your Formspree form address here (see setup steps). Feedback is emailed to you.
+const FEEDBACK_URL = "https://formspree.io/f/YOUR_FORM_ID";
+
 const $ = id => document.getElementById(id);
 const store = {get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
                set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -506,6 +537,42 @@ $("howtoClose").onclick = closeHowto;
 $("howto").addEventListener("click", e => { if (e.target === $("howto")) closeHowto(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && $("howto").classList.contains("show")) closeHowto(); });
 if (!store.get("wg-seen-howto", false)) openHowto();
+
+// Feedback bubble
+let fbType = "bug";
+function setFbType(t){ fbType=t; $("fbForm").querySelectorAll(".ftype button").forEach(b=>b.classList.toggle("on", b.dataset.t===t));
+  $("fbMsg").placeholder = t==="bug" ? "What happened? What did you expect?" : "What would make Wikiguess better?"; }
+function openFeedback(type, prefill){ setFbType(type||"bug"); if (prefill) $("fbMsg").value = prefill; $("fb").classList.add("show"); setTimeout(()=>$("fbMsg").focus(), 50); }
+function closeFeedback(){ $("fb").classList.remove("show"); }
+$("fbBtn").onclick = () => openFeedback("bug");
+$("fbX").onclick = closeFeedback;
+$("fb").addEventListener("click", e => { if (e.target === $("fb")) closeFeedback(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("fb").classList.contains("show")) closeFeedback(); });
+$("fbForm").querySelectorAll(".ftype button").forEach(b => b.onclick = () => setFbType(b.dataset.t));
+$("fbForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const msg = $("fbMsg").value.trim(); if (!msg) return;
+  if (FEEDBACK_URL.includes("YOUR_FORM_ID")){ toast("Feedback isn't set up yet"); return; }
+  const payload = {
+    type: fbType === "bug" ? "Bug" : "Idea / feedback",
+    message: msg,
+    email: $("fbEmail").value.trim() || "(none)",
+    _replyto: $("fbEmail").value.trim() || undefined,
+    _subject: `Wikiguess ${fbType === "bug" ? "bug" : "feedback"}: ${msg.slice(0,50)}`,
+    category: CATEGORIES[cat].name, mode, date: dayKey,
+    article: answer ? answer.title : "(not loaded)",
+    clues_used: history.length, finished: done,
+    list_errors: POOL_ERRORS.slice(-6).join(" | ") || "none",
+    device: navigator.userAgent, page: location.href,
+  };
+  $("fbSend").disabled = true; $("fbSend").textContent = "Sending…";
+  try{
+    const r = await fetch(FEEDBACK_URL, {method:"POST", headers:{"Content-Type":"application/json", "Accept":"application/json"}, body: JSON.stringify(payload)});
+    if (!r.ok) throw new Error(r.status);
+    $("fbMsg").value = ""; closeFeedback(); toast("Thanks! Message sent.");
+  }catch(err){ toast("Couldn't send. Please try again in a moment."); }
+  finally{ $("fbSend").disabled = false; $("fbSend").textContent = "Send"; }
+});
 function setMode(m){ mode=m; store.set("wg-mode",m); $("mDaily").classList.toggle("on",m==="daily"); $("mEndless").classList.toggle("on",m==="endless"); start(); }
 $("mDaily").onclick=()=>setMode("daily"); $("mEndless").onclick=()=>setMode("endless");
 
@@ -553,8 +620,9 @@ async function start(){
     render(); if (done) finish(false);
   }catch(e){
     if (token!==loadToken) return;
-    $("clues").innerHTML = `<div class="loading err">${esc(e.message||"Couldn't reach Wikipedia.")} <a href="#" id="retry">Try again</a></div>`;
+    $("clues").innerHTML = `<div class="loading err">${esc(e.message||"Couldn't reach Wikipedia.")} <a href="#" id="retry">Try again</a> · <a href="#" id="report">Report this</a></div>`;
     $("retry").onclick = ev => { ev.preventDefault(); start(); };
+    $("report").onclick = ev => { ev.preventDefault(); openFeedback("bug", "Article didn't load: " + (e.message||"unknown error")); };
   }
 }
 
