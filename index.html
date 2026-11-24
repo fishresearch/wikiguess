@@ -7,7 +7,16 @@
 <meta name="description" content="A daily guessing game: name the Wikipedia article from its sections. Science, philosophy, linguistics, history and more.">
 <meta property="og:title" content="Wikiguess">
 <meta property="og:description" content="Name the Wikipedia article from its sections. New puzzles daily in 9 categories.">
-<meta name="theme-color" content="#202122">
+<!-- Home-screen app setup -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Wikiguess">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f6f6f3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121314" media="(prefers-color-scheme: dark)">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -20,6 +29,8 @@
       --link:#7aa5ff; --good:#4fbf7d; --bad:#e2675d; --redact:#e8e8e6; }
   }
   *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  button,a{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   .wrap{max-width:660px;margin:0 auto;padding:18px 16px 60px}
   header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
@@ -110,7 +121,7 @@
     <div class="grid" id="rGrid"></div>
     <div class="stats" id="rStats"></div>
     <div class="row">
-      <button class="btn" id="share">Copy result</button>
+      <button class="btn" id="share">Share result</button>
       <button class="btn ghost" id="next" style="display:none">Next article</button>
     </div>
   </div>
@@ -557,7 +568,11 @@ $("skip").onclick = skip;
 $("next").onclick = start;
 $("share").onclick = async () => {
   const won = history.some(h=>h.r==="win");
-  const txt = `Wikiguess · ${CATEGORIES[cat].emoji} ${CATEGORIES[cat].name} ${mode==="daily"?dayKey:"(endless)"} ${won?history.length:"X"}/${MAX_CLUES}\n${grid()}`;
+  const txt = `Wikiguess · ${CATEGORIES[cat].emoji} ${CATEGORIES[cat].name} ${mode==="daily"?dayKey:"(endless)"} ${won?history.length:"X"}/${MAX_CLUES}\n${grid()}\nwikiguess.app`;
+  // On phones, open the native share sheet (Messages, etc.); fall back to copying
+  if (navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)){
+    try{ await navigator.share({text: txt}); return; }catch(e){ if (e.name === "AbortError") return; }
+  }
   try{ await navigator.clipboard.writeText(txt); toast("Copied!"); }catch(e){ toast(txt); }
 };
 // Autocomplete from Wikipedia titles
