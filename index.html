@@ -41,6 +41,16 @@
   .seg{display:flex;border:1px solid var(--rule);border-radius:999px;padding:2px;font-size:13px}
   .seg button{background:none;border:0;color:var(--muted);padding:5px 12px;border-radius:999px;cursor:pointer;font:inherit}
   .seg button.on{background:var(--ink);color:var(--bg)}
+  /* "Add to home screen" banner (phones only) */
+  .a2hs{display:none;gap:10px;align-items:center;background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:10px 10px 10px 12px;margin-bottom:10px;font-size:13.5px;line-height:1.45;animation:fade .3s ease}
+  .a2hs.show{display:flex}
+  .a2hs img{border-radius:9px;flex:none}
+  .a2hs .txt{flex:1}
+  .a2hs .acts{display:flex;align-items:center;gap:4px;flex:none}
+  .a2hs .btn{padding:7px 12px;font-size:13.5px}
+  .a2hs .x{background:none;border:0;font-size:22px;color:var(--muted);cursor:pointer;padding:0 4px;line-height:1}
+  .a2hs .ico{display:inline-block;border:1.5px solid currentColor;border-radius:3px;width:13px;height:13px;position:relative;vertical-align:-2px;margin:0 1px}
+  .a2hs .ico::after{content:"↑";position:absolute;top:-9px;left:1px;font-size:11px;font-weight:700}
   /* Categories: vertical sidebar on wide screens, a picker button + list on phones */
   .side{display:none}
   .side-h{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:0 12px 8px}
@@ -160,6 +170,11 @@
       <button class="qbtn" id="helpBtn" aria-label="How to play">?</button>
     </div>
   </header>
+  <div class="a2hs" id="a2hs" role="note">
+    <img src="apple-touch-icon.png" alt="" width="40" height="40">
+    <div class="txt"><b>Did you know?</b> You can add Wikiguess to your home screen and open it like an app. <span id="a2hsHow"></span></div>
+    <div class="acts"><button class="btn" id="a2hsInstall" style="display:none">Add</button><button class="x" id="a2hsX" aria-label="Dismiss">×</button></div>
+  </div>
   <button class="catpick" id="catPick" aria-haspopup="dialog"><span id="catPickLabel"></span><span class="chev">Change ▾</span></button>
   <div class="modal" id="catSheet" role="dialog" aria-modal="true" aria-label="Choose a category">
     <div class="sheet"><h2 style="font-size:20px;margin-bottom:10px">Categories</h2><nav class="catlist" id="catsSheet"></nav></div>
@@ -604,7 +619,35 @@ $("helpBtn").onclick = openHowto;
 $("howtoClose").onclick = closeHowto;
 $("howto").addEventListener("click", e => { if (e.target === $("howto")) closeHowto(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && $("howto").classList.contains("show")) closeHowto(); });
-if (!store.get("wg-seen-howto", false)) openHowto();
+const firstVisit = !store.get("wg-seen-howto", false);
+if (firstVisit) openHowto();
+
+// "Did you know you can add us to your home screen?" (phones not already running it as an app)
+const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const isAndroid = /Android/i.test(navigator.userAgent);
+const isInstalled = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+let installPrompt = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installPrompt = e; $("a2hsInstall").style.display = ""; $("a2hsHow").textContent = ""; });
+function maybeShowA2HS(inResult){
+  if (isInstalled || !(isIOS || isAndroid)) return;
+  if (inResult){ $("a2hs").style.marginTop = "14px"; $("a2hs").style.textAlign = "left"; $("result").appendChild($("a2hs")); }
+  if (Date.now() < store.get("wg-a2hs-snooze", 0)) return;
+  $("a2hsHow").innerHTML = isIOS
+    ? `Tap <span class="ico" aria-label="Share"></span> <b>Share</b>, then <b>Add to Home Screen</b>.`
+    : (installPrompt ? "" : `Tap <b>⋮</b> in Chrome, then <b>Add to Home screen</b>.`);
+  $("a2hs").classList.add("show");
+}
+$("a2hsX").onclick = () => { $("a2hs").classList.remove("show"); store.set("wg-a2hs-snooze", Date.now() + 14*864e5); track("a2hs/dismissed"); };
+$("a2hsInstall").onclick = async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  const { outcome } = await installPrompt.userChoice;
+  track("a2hs/" + outcome); installPrompt = null;
+  $("a2hs").classList.remove("show"); if (outcome !== "accepted") store.set("wg-a2hs-snooze", Date.now() + 14*864e5);
+};
+window.addEventListener("appinstalled", () => { $("a2hs").classList.remove("show"); track("a2hs/installed"); });
+// Not on the very first visit (the how-to popup is enough); returning players see it right away
+if (!firstVisit) maybeShowA2HS();
 
 // Feedback bubble
 let fbType = "bug";
@@ -781,6 +824,7 @@ function finish(fresh){
   const won = history.some(h=>h.r==="win"), n = history.length;
   if (fresh){
     track(won ? `solved/${cat}/${n}-clue${n>1?"s":""}` : `failed/${cat}`);
+    setTimeout(() => maybeShowA2HS(true), 1200);   // a nice moment to suggest it: right after finishing a puzzle
     if (mode==="daily"){
       const k="wg-s-"+cat, st=store.get(k,{p:0,w:0,streak:0,best:0,last:null});
       st.p++; if (won){ st.w++; st.streak=(st.last===yKey?st.streak:0)+1; st.best=Math.max(st.best,st.streak);} else st.streak=0;
