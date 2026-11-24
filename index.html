@@ -7,6 +7,8 @@
 <meta name="description" content="A daily guessing game: name the Wikipedia article from its sections. Science, philosophy, linguistics, history and more.">
 <meta property="og:title" content="Wikiguess">
 <meta property="og:description" content="Name the Wikipedia article from its sections. New puzzles daily in 9 categories.">
+<!-- Visitor stats: https://fishresearch.goatcounter.com -->
+<script data-goatcounter="https://fishresearch.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <!-- Home-screen app setup -->
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -189,7 +191,7 @@
   </div>
   <details id="diag" class="help" style="display:none;font-size:12px"><summary>Some article lists didn't load (details)</summary><pre id="diagText" style="white-space:pre-wrap;font-size:11.5px"></pre></details>
   <footer class="help" style="font-size:12px;border-top:1px solid var(--rule);padding-top:12px">
-    Clue text comes from <a href="https://en.wikipedia.org" style="color:var(--link)">Wikipedia</a> and is available under the <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:var(--link)">Creative Commons Attribution-ShareAlike 4.0 License</a>. Each answer links to its source article. Wikiguess is not affiliated with Wikipedia or the Wikimedia Foundation.
+    Clue text comes from <a href="https://en.wikipedia.org" style="color:var(--link)">Wikipedia</a> and is available under the <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:var(--link)">Creative Commons Attribution-ShareAlike 4.0 License</a>. Each answer links to its source article. Wikiguess is not affiliated with Wikipedia or the Wikimedia Foundation. Anonymous visit counts by <a href="https://www.goatcounter.com" style="color:var(--link)">GoatCounter</a>, with no cookies or personal data.
   </footer>
 </div>
 <div class="toast" id="toast"></div>
@@ -496,9 +498,14 @@ if (typeof module !== "undefined") module.exports = { CATEGORIES, SOURCES, parse
 <script>
 // ============================ UI ============================
 // ⬇︎ Paste your Formspree form address here (see setup steps). Feedback is emailed to you.
-const FEEDBACK_URL = "https://formspree.io/f/maeoalnb";
+const FEEDBACK_URL = "https://formspree.io/f/YOUR_FORM_ID";
 
 const $ = id => document.getElementById(id);
+// Game events for GoatCounter. They show up in the dashboard as paths like "solved/science/2-clues".
+function track(name){
+  const send = () => { if (window.goatcounter && window.goatcounter.count){ window.goatcounter.count({path:name, title:name, event:true}); return true; } return false; };
+  if (!send()) setTimeout(send, 2000);   // the counter script loads in the background
+}
 const store = {get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
                set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const esc = s => s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -569,7 +576,7 @@ $("fbForm").addEventListener("submit", async e => {
   try{
     const r = await fetch(FEEDBACK_URL, {method:"POST", headers:{"Content-Type":"application/json", "Accept":"application/json"}, body: JSON.stringify(payload)});
     if (!r.ok) throw new Error(r.status);
-    $("fbMsg").value = ""; closeFeedback(); toast("Thanks! Message sent.");
+    $("fbMsg").value = ""; closeFeedback(); toast("Thanks! Message sent."); track("feedback-sent");
   }catch(err){ toast("Couldn't send. Please try again in a moment."); }
   finally{ $("fbSend").disabled = false; $("fbSend").textContent = "Send"; }
 });
@@ -617,6 +624,7 @@ async function start(){
     }
     if (token!==loadToken) return;
     answer = art; clues = buildClues(art, rng(hashStr(seed)));
+    if (!done && !history.length) track(`started/${mode}/${cat}`);
     render(); if (done) finish(false);
   }catch(e){
     if (token!==loadToken) return;
@@ -683,6 +691,7 @@ function skip(){ if (done||busy||!answer) return; history.push({r:"skip"}); adva
 function finish(fresh){
   const won = history.some(h=>h.r==="win"), n = history.length;
   if (fresh){
+    track(won ? `solved/${cat}/${n}-clue${n>1?"s":""}` : `failed/${cat}`);
     if (mode==="daily"){
       const k="wg-s-"+cat, st=store.get(k,{p:0,w:0,streak:0,best:0,last:null});
       st.p++; if (won){ st.w++; st.streak=(st.last===yKey?st.streak:0)+1; st.best=Math.max(st.best,st.streak);} else st.streak=0;
@@ -708,6 +717,7 @@ $("skip").onclick = skip;
 $("next").onclick = start;
 $("share").onclick = async () => {
   const won = history.some(h=>h.r==="win");
+  track(`shared/${cat}`);
   const txt = `Wikiguess · ${CATEGORIES[cat].emoji} ${CATEGORIES[cat].name} ${mode==="daily"?dayKey:"(endless)"} ${won?history.length:"X"}/${MAX_CLUES}\n${grid()}\nwikiguess.app`;
   // On phones, open the native share sheet (Messages, etc.); fall back to copying
   if (navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)){
