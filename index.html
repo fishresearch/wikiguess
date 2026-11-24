@@ -41,18 +41,22 @@
   .seg{display:flex;border:1px solid var(--rule);border-radius:999px;padding:2px;font-size:13px}
   .seg button{background:none;border:0;color:var(--muted);padding:5px 12px;border-radius:999px;cursor:pointer;font:inherit}
   .seg button.on{background:var(--ink);color:var(--bg)}
-  .catwrap{position:relative;border-bottom:1px solid var(--rule);margin-bottom:6px}
-  .cats{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--muted) transparent}
-  .cats::-webkit-scrollbar{height:6px}
-  .cats::-webkit-scrollbar-track{background:var(--rule);border-radius:3px}
-  .cats::-webkit-scrollbar-thumb{background:var(--muted);border-radius:3px}
-  .cats::after{content:"";flex:0 0 28px}
-  .fade{position:absolute;top:0;bottom:12px;width:36px;pointer-events:none;transition:opacity .2s}
-  .fade.r{right:0;background:linear-gradient(to right,transparent,var(--bg))}
-  .fade.l{left:0;background:linear-gradient(to left,transparent,var(--bg));opacity:0}
-  .arrow{position:absolute;top:3px;width:30px;height:30px;border-radius:50%;border:1px solid var(--rule);background:var(--paper);color:var(--ink);font-size:16px;line-height:1;cursor:pointer;display:none;z-index:2}
-  .arrow.l{left:-6px}.arrow.r{right:-6px}
-  @media (hover:hover) and (pointer:fine){ .arrow{display:block} }
+  /* Categories: vertical sidebar on wide screens, a picker button + list on phones */
+  .side{display:none}
+  .side-h{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:0 12px 8px}
+  .catlist{display:flex;flex-direction:column;gap:2px}
+  .catlist button{display:flex;align-items:center;gap:10px;text-align:left;font:inherit;font-size:14.5px;padding:9px 12px;border-radius:8px;border:0;background:none;color:var(--ink);cursor:pointer}
+  .catlist button:hover{background:var(--paper)}
+  .catlist button.on{background:var(--ink);color:var(--bg);font-weight:600}
+  .catlist .em{width:22px;text-align:center}
+  .catpick{display:flex;width:100%;justify-content:space-between;align-items:center;font:inherit;font-size:15px;font-weight:600;padding:10px 14px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink);cursor:pointer;margin-bottom:4px}
+  .catpick .chev{font-weight:500;font-size:13px;color:var(--muted)}
+  @media (min-width:900px){
+    .page{display:grid;grid-template-columns:210px minmax(0,660px);justify-content:center;gap:24px;padding:0 16px}
+    .side{display:block;position:sticky;top:0;align-self:start;padding-top:28px;max-height:100vh;overflow-y:auto}
+    .page .wrap{margin:0;max-width:none}
+    .catpick{display:none}
+  }
   .hdr-right{display:flex;align-items:center;gap:8px}
   .qbtn{width:30px;height:30px;border-radius:50%;border:1px solid var(--rule);background:none;color:var(--ink);font:600 15px "Source Serif 4",serif;cursor:pointer}
   /* How-to-play popup */
@@ -68,7 +72,9 @@
   .demo .bar i{display:block;height:100%;width:72%;background:var(--hot)}
   .sheet .btn{width:100%;margin-top:6px}
   /* Feedback bubble + form */
-  .fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;border:0;background:var(--ink);color:var(--bg);font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:10}
+  .wrap{padding-bottom:96px}
+  .fab.hide{opacity:0;pointer-events:none}
+  .fab{transition:opacity .2s;position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));width:44px;height:44px;border-radius:50%;border:0;background:var(--ink);color:var(--bg);font-size:19px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:10}
   .fab:hover{transform:scale(1.05)}
   .ftype{display:flex;gap:8px;margin-bottom:12px}
   .ftype button{flex:1;font:inherit;font-size:14px;padding:9px;border-radius:8px;border:1px solid var(--rule);background:var(--bg);color:var(--ink);cursor:pointer}
@@ -77,6 +83,18 @@
   .sheet textarea{min-height:110px;resize:vertical}
   .sheet .note{font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.45}
   form.sheet{display:block;margin-top:0}
+  /* Hints + connections */
+  .hintbox{font-family:Inter,sans-serif;font-size:14px;border:1px dashed var(--rule);border-radius:6px;padding:10px 12px;margin-bottom:16px;background:var(--bg);animation:fade .3s ease}
+  .hintbox div+div{margin-top:8px}
+  .hintbox .k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:2px}
+  .hintbox .desc{font-family:"Source Serif 4",serif;font-size:16.5px}
+  .shape{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:4px}
+  .shape span{display:flex;align-items:flex-end;gap:6px}
+  .shape i{display:inline-block;width:13px;height:18px;border-bottom:2.5px solid var(--ink)}
+  .shape em{font-style:normal;font-weight:600;line-height:1}
+  .conn{margin-top:8px;padding:8px 10px;border-left:3px solid var(--good);background:var(--bg);border-radius:0 6px 6px 0;font-family:"Source Serif 4",serif;font-size:14.5px;line-height:1.5}
+  .conn .k{display:block;font-family:Inter,sans-serif;font-size:11.5px;font-weight:600;color:var(--good);margin-bottom:2px}
+  .conn b{background:color-mix(in srgb,var(--good) 18%,transparent);border-radius:2px;padding:0 2px}
   .sheet .x{float:right;background:none;border:0;font-size:22px;color:var(--muted);cursor:pointer;line-height:1}
   .cats button{flex:none;font:inherit;font-size:13.5px;padding:6px 12px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);cursor:pointer;white-space:nowrap}
   .cats button.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);font-weight:600}
@@ -129,6 +147,11 @@
 </style>
 </head>
 <body>
+<div class="page">
+<aside class="side" aria-label="Categories">
+  <div class="side-h">Categories</div>
+  <nav class="catlist" id="catsSide"></nav>
+</aside>
 <div class="wrap">
   <header>
     <h1>Wiki<b>guess</b></h1>
@@ -137,11 +160,9 @@
       <button class="qbtn" id="helpBtn" aria-label="How to play">?</button>
     </div>
   </header>
-  <div class="catwrap">
-    <button class="arrow l" id="catL" aria-label="Scroll categories left">‹</button>
-    <div class="cats" id="cats"></div>
-    <div class="fade l" id="fadeL"></div><div class="fade r" id="fadeR"></div>
-    <button class="arrow r" id="catR" aria-label="Scroll categories right">›</button>
+  <button class="catpick" id="catPick" aria-haspopup="dialog"><span id="catPickLabel"></span><span class="chev">Change ▾</span></button>
+  <div class="modal" id="catSheet" role="dialog" aria-modal="true" aria-label="Choose a category">
+    <div class="sheet"><h2 style="font-size:20px;margin-bottom:10px">Categories</h2><nav class="catlist" id="catsSheet"></nav></div>
   </div>
 
   <div class="modal" id="howto" role="dialog" aria-modal="true" aria-labelledby="howtoTitle">
@@ -153,7 +174,8 @@
       <div class="step"><span class="n">2</span><div>Type your guess. Any Wikipedia article counts, and typos are OK. A wrong guess or a skip reveals the next clue. You get 6 clues.</div></div>
       <div class="step"><span class="n">3</span><div><b>Link Radar:</b> wrong guesses show how close you are, plus pages your guess and the answer both link to.
         <div class="demo"><div style="display:flex;justify-content:space-between;font-family:Inter,sans-serif;font-size:13px"><b>Squid</b><span style="color:var(--hot);font-weight:600">Hot</span></div><div class="bar"><i></i></div><span style="font-family:Inter,sans-serif;font-size:12px;color:var(--muted)">Both link to: Cephalopod, Ink</span></div></div></div>
-      <div class="step"><span class="n">4</span><div>New daily puzzles in every category, or play Endless. Share your result grid: <span style="white-space:nowrap">🟦🟨🟧🟩</span></div></div>
+      <div class="step"><span class="n">4</span><div><b>Stuck?</b> Tap 💡 Hint to see what kind of thing it is, then the shape of the title. Hints are free, but they show up as 💡 when you share.</div></div>
+      <div class="step"><span class="n">5</span><div>New daily puzzles in every category, or play Endless. Share your result grid: <span style="white-space:nowrap">🟦🟨🟧🟩</span></div></div>
       <button class="btn" id="howtoClose">Play</button>
     </div>
   </div>
@@ -171,7 +193,7 @@
     <datalist id="sugg"></datalist>
     <button class="btn" id="go" type="submit">Guess</button>
   </form>
-  <div class="row"><button class="btn ghost" id="skip">Skip → next clue</button></div>
+  <div class="row"><button class="btn ghost" id="skip">Skip → next clue</button><button class="btn ghost" id="hint" style="flex:0 0 auto">💡 Hint</button></div>
   <ul class="guesses" id="list"></ul>
 
   <div class="result" id="result">
@@ -193,7 +215,8 @@
   <footer class="help" style="font-size:12px;border-top:1px solid var(--rule);padding-top:12px">
     Clue text comes from <a href="https://en.wikipedia.org" style="color:var(--link)">Wikipedia</a> and is available under the <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:var(--link)">Creative Commons Attribution-ShareAlike 4.0 License</a>. Each answer links to its source article. Wikiguess is not affiliated with Wikipedia or the Wikimedia Foundation. Anonymous visit counts by <a href="https://www.goatcounter.com" style="color:var(--link)">GoatCounter</a>, with no cookies or personal data.
   </footer>
-</div>
+</div><!-- /wrap -->
+</div><!-- /page -->
 <div class="toast" id="toast"></div>
 
 <button class="fab" id="fbBtn" aria-label="Send feedback">💬</button>
@@ -223,6 +246,7 @@ const CATEGORIES = {
   linguistics: {name:"Linguistics", emoji:"🗣️", pool:["Linguistic relativity","Noam Chomsky","Universal grammar","Phoneme","Morpheme","International Phonetic Alphabet","Great Vowel Shift","Proto-Indo-European language","Pidgin","Creole language","Esperanto","Rosetta Stone","Cuneiform","Linear B","Code-switching","Dialect","Grimm's law","Ferdinand de Saussure","Pragmatics","Semantics","Syntax","Sign language","American Sign Language","Basque language","Klingon language","Pirahã language","Click consonant","Ergative–absolutive alignment","Grammatical gender","Loanword","Hangul","Chinese characters","Latin","Sanskrit","Vowel harmony","Onomatopoeia","Eggcorn","Garden-path sentence","Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo","Colorless green ideas sleep furiously","Critical period hypothesis","Voynich manuscript","Endangered language","Glottal stop","Schwa","Tone (linguistics)","Language isolate","Mondegreen"]},
   history: {name:"History", emoji:"📜", pool:["Fall of the Western Roman Empire","Black Death","French Revolution","Ming dynasty","Cold War","Silk Road","Industrial Revolution","Magna Carta","Byzantine Empire","Ottoman Empire","Aztec Empire","Inca Empire","Mongol Empire","Printing press","Renaissance","Reformation","Apollo 11","Berlin Wall","Titanic","Pompeii","Cleopatra","Genghis Khan","Joan of Arc","Napoleon","Battle of Hastings","Hundred Years' War","Meiji Restoration","Haitian Revolution","Library of Alexandria","Terracotta Army","Stonehenge","Columbian exchange","Spanish flu","Dust Bowl","Partition of India","Viking Age","Hanseatic League","Great Fire of London","Code of Hammurabi","Mansa Musa","Boston Tea Party","Tulip mania"]},
   geography: {name:"Geography", emoji:"🌍", pool:["Mount Everest","Amazon rainforest","Sahara","Great Barrier Reef","Mariana Trench","Dead Sea","Iceland","Madagascar","Venice","Istanbul","Kyoto","Antarctica","Nile","Mississippi River","Grand Canyon","Galápagos Islands","Lake Baikal","Atacama Desert","Himalayas","Andes","Greenland","Svalbard","Bhutan","Singapore","Petra","Machu Picchu","Angkor Wat","Panama Canal","Strait of Gibraltar","Ring of Fire","Victoria Falls","Yellowstone National Park","Boston","Tokyo","Vatican City","Easter Island","Okavango Delta","Dolomites","Patagonia","Faroe Islands","Bay of Fundy","Uluru"]},
+  neuroscience: {name:"Neuroscience", emoji:"🧠", pool:["Neuron","Synapse","Action potential","Neurotransmitter","Dopamine","Serotonin","Acetylcholine","Gamma-Aminobutyric acid","Myelin","Glia","Blood–brain barrier","Hippocampus","Amygdala","Prefrontal cortex","Cerebellum","Thalamus","Hypothalamus","Basal ganglia","Corpus callosum","Neocortex","Visual cortex","Cortical homunculus","Broca's area","Wernicke's area","Default mode network","Neuroplasticity","Long-term potentiation","Place cell","Grid cell","Mirror neuron","Split-brain","Phantom limb","Synesthesia","Prosopagnosia","Blindsight","Phineas Gage","Henry Molaison","Santiago Ramón y Cajal","Camillo Golgi","Oliver Sacks","Hodgkin–Huxley model","Electroencephalography","Functional magnetic resonance imaging","Optogenetics","Brain–computer interface","Connectome","Phrenology","Rapid eye movement sleep","Circadian rhythm","Consciousness","Alzheimer's disease","Parkinson's disease","Epilepsy"]},
   music: {name:"Music", emoji:"🎵", pool:["Johann Sebastian Bach","Wolfgang Amadeus Mozart","Pyotr Ilyich Tchaikovsky","Frédéric Chopin","Igor Stravinsky","The Rite of Spring","The Four Seasons (Vivaldi)","Elvis Presley","Michael Jackson","Bob Dylan","Aretha Franklin","Miles Davis","Kind of Blue","Louis Armstrong","Nina Simone","Johnny Cash","Fela Kuti","Ravi Shankar","Björk","Kraftwerk","Bob Marley","Reggae","Punk rock","Heavy metal music","Rock and roll","Gospel music","Bossa nova","K-pop","Gamelan","Sitar","Theremin","Piano","Violin","Stradivarius","Electric guitar","Synthesizer","Auto-Tune","Woodstock","Symphony","Fugue","Twelve-tone technique","Equal temperament","Musical notation","Throat singing","Didgeridoo","Disco","Techno","Grunge","Motown","Carnegie Hall","Bohemian Rhapsody","Thriller (album)"]},
   arts: {name:"Arts & Architecture", emoji:"🎨", pool:["Mona Lisa","The Starry Night","Hamlet","Don Quixote","The Great Gatsby","Ludwig van Beethoven","Frida Kahlo","Jazz","Hip hop music","Opera","Ballet","Impressionism","Cubism","Baroque","Haiku","Sonnet","William Shakespeare","Jane Austen","The Beatles","Kabuki","Origami","Ukiyo-e","Bauhaus","Art Nouveau","Gothic architecture","Sistine Chapel ceiling","Odyssey","Epic of Gilgamesh","One Thousand and One Nights","Blues","Flamenco","Surrealism","Banksy","Charlie Chaplin","Citizen Kane","Toni Morrison","Gabriel García Márquez","Frank Lloyd Wright","Le Corbusier","Zaha Hadid","Brutalist architecture","Fallingwater","Sagrada Família","Flying buttress"]},
   technology: {name:"Technology", emoji:"⚙️", pool:["Raspberry Pi","Internet","Transistor","Steam engine","Bicycle","Lego","3D printing","Velcro","Global Positioning System","Lithium-ion battery","Microwave oven","Electrical telegraph","Morse code","Turing machine","ENIAC","Linux","World Wide Web","Bitcoin","Smartphone","Jet engine","Light-emitting diode","Laser","Refrigerator","Concrete","Arduino","Wi-Fi","QR code","Barcode","Hubble Space Telescope","International Space Station","Elevator","Golden Gate Bridge","Eiffel Tower","Nuclear reactor","Solar cell","Wind turbine","Typewriter","Phonograph","Compact disc","Antikythera mechanism"]},
@@ -230,7 +254,7 @@ const CATEGORIES = {
 };
 // General knowledge = every pool combined
 CATEGORIES.general = {name:"General", emoji:"✨", pool:[...new Set(Object.values(CATEGORIES).flatMap(c=>c.pool))]};
-const CAT_ORDER = ["general","science","philosophy","linguistics","history","geography","arts","music","technology","math"];
+const CAT_ORDER = ["general","science","neuroscience","philosophy","linguistics","history","geography","arts","music","technology","math"];
 
 const MAX_CLUES = 6;
 const API = "https://en.wikipedia.org/w/api.php";
@@ -272,13 +296,13 @@ async function fetchLinks(title, cap=2500){
 }
 
 async function fetchArticle(title, withLinks=true){
-  const d = await api({titles:title, redirects:1, prop:"extracts|redirects|pageprops",
+  const d = await api({titles:title, redirects:1, prop:"extracts|redirects|pageprops|description",
                        explaintext:1, exsectionformat:"wiki", rdlimit:"max", rdnamespace:0, ppprop:"disambiguation"});
   const p = d.query.pages[0];
   if (!p || p.missing || !p.extract) throw new Error("Couldn't load “"+title+"”");
   if (p.pageprops && "disambiguation" in p.pageprops) throw new Error("“"+title+"” is a disambiguation page");
   const links = withLinks ? await fetchLinks(p.title) : new Set();
-  return { title:p.title, extract:p.extract, redirects:(p.redirects||[]).map(r=>r.title), links };
+  return { title:p.title, extract:p.extract, redirects:(p.redirects||[]).map(r=>r.title), links, description:p.description || "" };
 }
 
 // Turn whatever the player typed into a real article title (or null).
@@ -385,6 +409,45 @@ function linkRadar(answer, guessTitle, guessLinks, rand){
   return { heat, label, direct, sharedCount: shared.length, picks };
 }
 
+// ---------- hints ----------
+// Title shape: letters/digits become blanks, spaces and punctuation stay. "Rubik's Cube" -> words of blanks.
+function titleShape(title){
+  const base = title.replace(/\s*\([^)]*\)\s*$/,"");
+  return base.split(" ").map(w => [...w].map(ch => /[\p{L}\p{N}]/u.test(ch) ? "_" : ch));
+}
+
+// ---------- connection: why a wrong guess was on the right track ----------
+// Finds the sentence in the answer's article that mentions the guess, so the player sees how they relate.
+// Returns redacted parts (answer hidden) with the guess phrase flagged, or null.
+function connectionSnippet(answer, guessTitle){
+  const g = guessTitle.replace(/\s*\([^)]*\)\s*$/,"").trim();
+  if (g.length < 3) return null;
+  const re = new RegExp("(?<![\\p{L}\\p{N}])" + escRe(g) + "(s|es|'s|’s)?(?![\\p{L}\\p{N}])", "iu");
+  const secs = parseSections(answer.extract).filter(s => !SKIP_SECTION.test(s.h));
+  // Prefer body sections (the lead is the easiest clue), then fall back to the lead
+  const ordered = [...secs.slice(1), secs[0]];
+  for (const s of ordered){
+    const sents = s.text.split(/(?<=[.!?])\s+(?=[A-Z0-9"“(‘])/);
+    const hit = sents.find(x => re.test(x) && x.length > 40);
+    if (!hit) continue;
+    let text = hit.length > 280 ? (() => { const i = hit.search(re); const st = Math.max(0, i - 120); return (st ? "…" : "") + hit.slice(st, st + 260).replace(/\s+\S*$/,"") + "…"; })() : hit;
+    const parts = buildRedactor(answer.title, answer.redirects)(text);
+    // Mark the guess phrase inside unredacted parts so the UI can bold it
+    const out = [];
+    for (const p of parts){
+      if (p.r) { out.push(p); continue; }
+      const m = p.t.match(re);
+      if (!m) { out.push(p); continue; }
+      const i = m.index;
+      if (i) out.push({t:p.t.slice(0,i), r:false});
+      out.push({t:m[0], r:false, g:true});
+      if (i + m[0].length < p.t.length) out.push({t:p.t.slice(i + m[0].length), r:false});
+    }
+    return { section: s.h, parts: out };
+  }
+  return null;
+}
+
 function heatEmoji(h){ return h>=75?"🟥":h>=55?"🟧":h>=35?"🟨":"🟦"; }
 
 function isWin(text, resolvedTitle, answer){
@@ -405,6 +468,7 @@ const SOURCES = {
   linguistics: [["Society and social sciences", /language|linguist|writing/i], ["People", /linguist/i]],
   history:     [["History"], ["People", /leader|politic|military|explorer|ruler|monarch|activist|revolution/i]],
   geography:   [["Geography"]],
+  neuroscience:[["Biological and health sciences", /neuro|nerv|brain|psych|sens|mental/i, true], ["People", /psycholog|neuro/i]],
   music:       [["Arts", /music/i, true], ["People", /music|composer|singer|songwriter/i]],   // true = no whole-page fallback
   arts:        [["Arts"], ["People", /artist|writer|author|poet|music|composer|architect|film|painter|sculpt/i]],
   technology:  [["Technology"], ["People", /inventor|engineer/i]],
@@ -491,7 +555,7 @@ async function firstPlayable(candidates, tries=6){
   throw lastErr || new Error("Couldn't find a playable article");
 }
 
-if (typeof module !== "undefined") module.exports = { CATEGORIES, SOURCES, parseSections, excerpt, buildRedactor, buildClues, linkRadar, isWin, resolveGuess, fetchArticle, pickTitle, rng, hashStr, norm, loadPool, rankDaily, isPlayable, firstPlayable, cleanPool, setFetch: f => { fetchImpl = f; } };
+if (typeof module !== "undefined") module.exports = { titleShape, connectionSnippet, CATEGORIES, SOURCES, parseSections, excerpt, buildRedactor, buildClues, linkRadar, isWin, resolveGuess, fetchArticle, pickTitle, rng, hashStr, norm, loadPool, rankDaily, isPlayable, firstPlayable, cleanPool, setFetch: f => { fetchImpl = f; } };
 // ============================ ENGINE END ============================
 </script>
 
@@ -514,27 +578,24 @@ const dayKey = today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0"
 const yKey = (()=>{const d=new Date(today);d.setDate(d.getDate()-1);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");})();
 
 let mode = store.get("wg-mode","daily"), cat = store.get("wg-cat","general");
-let answer=null, clues=[], history=[], done=false, busy=false, loadToken=0, endlessSeen=new Set();
+let hints=0, answer=null, clues=[], history=[], done=false, busy=false, loadToken=0, endlessSeen=new Set();
 
+// Same vertical list in two places: the sidebar (wide screens) and the picker sheet (phones)
 function renderCats(){
-  $("cats").innerHTML = CAT_ORDER.map(id => `<button data-c="${id}" class="${id===cat?"on":""}">${CATEGORIES[id].emoji} ${CATEGORIES[id].name}</button>`).join("");
-  $("cats").querySelectorAll("button").forEach(b => b.onclick = () => { cat=b.dataset.c; store.set("wg-cat",cat); renderCats(); start(); });
-  const on = $("cats").querySelector("button.on");
-  if (on) on.scrollIntoView({block:"nearest", inline:"center", behavior:"smooth"});
-  updateCatEdges();
+  const html = CAT_ORDER.map(id => `<button data-c="${id}" class="${id===cat?"on":""}"${id===cat?' aria-current="true"':""}><span class="em">${CATEGORIES[id].emoji}</span>${CATEGORIES[id].name}</button>`).join("");
+  for (const box of [$("catsSide"), $("catsSheet")]){
+    box.innerHTML = html;
+    box.querySelectorAll("button").forEach(b => b.onclick = () => {
+      $("catSheet").classList.remove("show");
+      if (b.dataset.c === cat) return;
+      cat=b.dataset.c; store.set("wg-cat",cat); renderCats(); start(); window.scrollTo({top:0, behavior:"smooth"});
+    });
+  }
+  $("catPickLabel").textContent = `${CATEGORIES[cat].emoji} ${CATEGORIES[cat].name}`;
 }
-// Category row: fades + arrows show when there's more to scroll; mouse wheel scrolls sideways
-function updateCatEdges(){
-  const c=$("cats"), max=c.scrollWidth-c.clientWidth;
-  const atL=c.scrollLeft<=2, atR=c.scrollLeft>=max-2;
-  $("fadeL").style.opacity = atL?0:1; $("fadeR").style.opacity = atR?0:1;
-  $("catL").style.visibility = atL?"hidden":""; $("catR").style.visibility = atR?"hidden":"";
-}
-$("cats").addEventListener("scroll", updateCatEdges, {passive:true});
-window.addEventListener("resize", updateCatEdges);
-$("catL").onclick = () => $("cats").scrollBy({left:-240});
-$("catR").onclick = () => $("cats").scrollBy({left:240});
-$("cats").addEventListener("wheel", e => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)){ $("cats").scrollLeft += e.deltaY; e.preventDefault(); } }, {passive:false});
+$("catPick").onclick = () => $("catSheet").classList.add("show");
+$("catSheet").addEventListener("click", e => { if (e.target === $("catSheet")) $("catSheet").classList.remove("show"); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") $("catSheet").classList.remove("show"); });
 
 // How-to-play popup: shown on the first visit, reopened with the ? button
 function openHowto(){ $("howto").classList.add("show"); $("howtoClose").focus(); }
@@ -596,8 +657,8 @@ async function start(){
   let seed, saved = null;
   if (mode==="daily"){
     saved = store.get(dailyKey(), null);
-    history = saved ? saved.history : []; done = saved ? saved.done : false;
-  } else { history=[]; done=false; }
+    history = saved ? saved.history : []; done = saved ? saved.done : false; hints = saved && saved.hints || 0;
+  } else { history=[]; done=false; hints=0; }
   renderPips(); setInputs();
   try{
     const pool = await loadPool(cat, store);
@@ -640,7 +701,7 @@ function render(){
   const won = history.some(h=>h.r==="win");
   $("article").classList.toggle("revealed", done);
   const n = done ? clues.length : Math.min(revealedCount(), clues.length);
-  $("clues").innerHTML = clues.slice(0,n).map((c,i)=>`<div class="clue"><h3>${esc(c.h)}<span>Clue ${i+1}</span></h3><p>${partsHtml(c.parts, done)}</p></div>`).join("");
+  $("clues").innerHTML = hintsHtml() + clues.slice(0,n).map((c,i)=>`<div class="clue"><h3>${esc(c.h)}<span>Clue ${i+1}</span></h3><p>${partsHtml(c.parts, done)}</p></div>`).join("");
   $("titleLine").innerHTML = done && answer ? `<span style="color:var(--${won?"good":"bad"})">${esc(answer.title)}</span>` : `<span class="rd">████████████</span>`;
   renderPips(); renderGuesses(); setInputs();
 }
@@ -654,16 +715,44 @@ function renderGuesses(){
   $("list").innerHTML = history.filter(h=>h.r!=="win").map(h => {
     if (h.r==="skip") return `<li class="guess skip">Skipped</li>`;
     const picks = h.picks && h.picks.length ? `Both link to: ${h.picks.map(t=>`<span class="chip">${esc(t)}</span>`).join("")}` : (h.sharedCount? "" : "No links in common");
+    const conn = h.conn ? `<div class="conn"><span class="k">🔗 You're onto something. The answer's “${esc(h.conn.section)}” section says:</span>${h.conn.parts.map(p => p.r ? `<span class="rd">${done?esc(p.t):esc(p.t).replace(/[^\s]/g,"█")}</span>` : p.g ? `<b>${esc(p.t)}</b>` : esc(p.t)).join("")}</div>` : "";
     return `<li class="guess"><div class="top"><span class="name">${esc(h.g)}</span><span class="lbl" style="color:${heatColor(h.heat)}">${h.label}${h.direct?" · linked!":""}</span></div>
-      <div class="bar"><i style="width:${h.heat}%;background:${heatColor(h.heat)}"></i></div><div class="shared">${picks}</div></li>`;
+      <div class="bar"><i style="width:${h.heat}%;background:${heatColor(h.heat)}"></i></div><div class="shared">${picks}</div>${conn}</li>`;
   }).reverse().join("");
 }
 function setInputs(){
   const off = done || busy || !answer;
   $("g").disabled = done; $("go").disabled = off; $("skip").disabled = off;
+  const left = availableHints().length - hints;
+  $("hint").disabled = off || left <= 0;
+  $("hint").textContent = left > 0 ? `💡 Hint (${left})` : "💡 No hints left";
   $("f").style.display = done?"none":""; $("skip").parentElement.style.display = done?"none":"";
 }
-function save(){ if (mode==="daily" && answer) store.set(dailyKey(), {title: answer.title, history, done}); }
+function save(){ if (mode==="daily" && answer) store.set(dailyKey(), {title: answer.title, history, done, hints}); }
+
+// Hints, in order: what kind of thing it is (Wikipedia's short description), then the title's shape
+function availableHints(){
+  if (!answer) return [];
+  const list = [];
+  if (answer.description && answer.description.length > 3) list.push("desc");
+  list.push("shape");
+  return list;
+}
+function hintsHtml(){
+  if (!answer) return "";
+  const shown = done ? [] : availableHints().slice(0, hints);
+  if (!shown.length) return "";
+  const redact = buildRedactor(answer.title, answer.redirects);
+  const rows = shown.map(k => k === "desc"
+    ? `<div><span class="k">💡 What is it?</span><span class="desc">${partsHtml(redact(answer.description.charAt(0).toUpperCase() + answer.description.slice(1)), false)}</span></div>`
+    : `<div><span class="k">💡 Title shape · ${titleShape(answer.title).map(w=>w.filter(c=>c==="_").length).join(" + ")} letters</span><span class="shape">${titleShape(answer.title).map(w => `<span>${w.map(c => c==="_" ? "<i></i>" : `<em>${esc(c)}</em>`).join("")}</span>`).join("")}</span></div>`);
+  return `<div class="hintbox">${rows.join("")}</div>`;
+}
+function useHint(){
+  if (done || busy || !answer || hints >= availableHints().length) return;
+  hints++; track(`hint/${cat}/${availableHints()[hints-1]}`);
+  save(); render();
+}
 
 async function guess(text){
   if (done || busy || !answer) return;
@@ -678,7 +767,7 @@ async function guess(text){
     if (history.some(h=>h.g===res.title)){ toast("Already guessed "+res.title); return; }
     const gLinks = await fetchLinks(res.title);
     const radar = linkRadar(answer, res.title, gLinks, rng(hashStr(answer.title+"|"+res.title)));
-    history.push({g:res.title, r:"miss", ...radar});
+    history.push({g:res.title, r:"miss", ...radar, conn: connectionSnippet(answer, res.title)});
     if (res.fuzzy && norm(res.title)!==norm(text)) toast(`Read as “${res.title}”`);
     advance();
   }catch(e){ toast("Couldn't reach Wikipedia — try again"); }
@@ -714,11 +803,15 @@ function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show")
 
 $("f").addEventListener("submit", e => { e.preventDefault(); guess($("g").value); });
 $("skip").onclick = skip;
+$("hint").onclick = useHint;
+// Keep the feedback bubble out of the way while typing a guess
+$("g").addEventListener("focus", () => $("fbBtn").classList.add("hide"));
+$("g").addEventListener("blur", () => setTimeout(() => $("fbBtn").classList.remove("hide"), 150));
 $("next").onclick = start;
 $("share").onclick = async () => {
   const won = history.some(h=>h.r==="win");
   track(`shared/${cat}`);
-  const txt = `Wikiguess · ${CATEGORIES[cat].emoji} ${CATEGORIES[cat].name} ${mode==="daily"?dayKey:"(endless)"} ${won?history.length:"X"}/${MAX_CLUES}\n${grid()}\nwikiguess.app`;
+  const txt = `Wikiguess · ${CATEGORIES[cat].emoji} ${CATEGORIES[cat].name} ${mode==="daily"?dayKey:"(endless)"} ${won?history.length:"X"}/${MAX_CLUES}${hints?" "+"💡".repeat(hints):""}\n${grid()}\nwikiguess.app`;
   // On phones, open the native share sheet (Messages, etc.); fall back to copying
   if (navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)){
     try{ await navigator.share({text: txt}); return; }catch(e){ if (e.name === "AbortError") return; }
